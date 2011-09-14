@@ -1,0 +1,7 @@
+Python XMLRPC server that mangles bind db files so you can 
+create your own little dyndns nameserver.(Tacky but works)
+
+
+Follow the instructions in the contrib setup.txt file
+Requires delegation from your domain to your nameserver.
+

@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+import util
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog):
+    printf("Usage is %s <host> <ip>\n",prog)
+    printf("\n")
+    printf("set the host name to the ip address\n")
+
+if __name__=="__main__":
+    conf = util.load_json("dnsxmlclient.json")
+
+    url = conf["url"]
+    cred = conf["cred"]
+
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<3:
+        usage(prog)
+        sys.exit()
+    host = sys.argv[1]
+    ip = sys.argv[2]
+    s = xmlrpclib.ServerProxy(url)
+    s.setARecord(cred,host,ip)

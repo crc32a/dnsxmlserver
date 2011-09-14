@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+import util
+import sys
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+if __name__=="__main__":
+    conf = util.load_json("dnsxmlclient.json")
+
+    url = conf["url"]
+    cred = conf["cred"]
+
+    s = xmlrpclib.ServerProxy(url)
+    A = s.getARecords(cred)
+    for (host,ip) in s.getARecords(cred).items():
+        printf("%s: %s\n",host,ip)
+

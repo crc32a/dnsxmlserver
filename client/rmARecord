@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+import util
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog):
+    printf("Usage is %s <host>\n",prog)
+    printf("\n")
+    printf("delete the A record for the host\n")
+
+if __name__=="__main__":
+    conf = util.load_json("dnsxmlclient.json")
+
+    url = conf["url"]
+    cred = conf["cred"]
+
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<2:
+        usage(prog)
+        sys.exit()
+    host = sys.argv[1]
+    s = xmlrpclib.ServerProxy(url)
+    s.delARecord(cred,host)

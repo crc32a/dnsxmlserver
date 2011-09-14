@@ -1,0 +1,68 @@
+
+
+On the bind server
+----------
+Setup a bind server with python OpenSSL.
+in my case this was on ubuntu 10.04
+
+sudo apt-get install python-openssl bind9
+in your /etc/bind directory edit the named.local.conf file so that it
+has your domain. For example if your domain is mydomain.org you would have.
+Also remember the name of the file you use. For example /etc/bind/mydomain.org
+as it will be used in your dnsxmlserver.json file later
+
+Example named.local.conf:
+    zone "mydomain.org" IN {
+        type master;
+        file "/etc/bind/mydomain.org";
+    };
+
+
+generate a key and cert for your server since the XMLRPC uses HTTPS.
+For a wuick test run the genrsa script in the contrib directory it will place
+a localhost.crt and localhost.key in your /etc directory. The genrsakey script
+will use your /etc/hostname to figure out your CN. Edit the genrsakey file
+to change your Location and other info. For example You may not be in the US
+ or Texas or Rackspace etc.
+
+edit the records.json file in your contrib directory. Place your base 
+SOA record in the pre_record portion and replace the 
+yourdomain.org references with your actual domain. In my case I had to use
+the mydomainns1.mydomain.org since that was the only way to get delegation to
+work as I was subdomaining off of some one elses domain.
+
+the pre_record portion of the json file will basically be the section that
+will appear above the actual NS records in the bind zone file.
+I'm sure you can build a better SOA record in your setup.
+
+The "A":{ ... portion of the records.json file will act as the backing store 
+for your A records. Each time you add an A record via the XMLRPC call
+it will get inserted in the records.json file and a new bind zone file will
+be created. After the XMLRPC server will restart bind.
+
+After editing your records.json file copy it to you /etc directory
+next edit your dnsxmlserver.json file
+configure your passwd and user.  Your xmlRPCServer will also be the same
+machine as your name server so put your name servers ip in the host portion of
+the dnsxmlserver.json file. This option will tell the XMLRPC server which ip
+it should bind to when serving requests. also set the bindfile entry to the 
+location of your zone file.  copy the dnsxmlserver.json file to your /etc
+directory. In the example A records you'll see an ns1 entry which is your 
+name servers A record. 127.0.0.1 is clearly not going to work in procution you
+can set it to your nameservers actual A record later. also you can set your
+serial number to what ever you see fit as your starting serial number. The 
+bindfile option should be set to what ever you used in your name.local.conf 
+file.
+
+To start the server just run dnsxmlserver.py. The startrpc script does this.
+To stop the server you can use the stoprpc script which will attempt to kill
+the XMLRPC server if it exists. It does this by useing ps -ww and figureing
+out what pids to send the kill command too.
+
+The Client
+----------
+    For your client simply edit your dnsxmlclient.json file.
+    set the url to the url of your XMLRPC server. Make sure the port
+    matches the port you specified in the dnsxmlserver.json file
+    also make sure your passwd and user options match the dnsxmlserver.json
+    file as well.

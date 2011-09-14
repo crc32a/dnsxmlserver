@@ -1,0 +1,1 @@
+openssl req -new -newkey rsa:4096 -days 730 -nodes -x509 -subj "/C=US/ST=Texas/L=San Antonio/O=Rackspace/OU=platform/CN=`cat /etc/hostname`" -keyout /etc/localhost.key  -out /etc/localhost.crt

@@ -1,0 +1,7 @@
+{
+  "url": "https://yourNsIp:23142", 
+  "cred": {
+    "passwd": "dnspasswd", 
+    "user": "dnsuser"
+  }
+}

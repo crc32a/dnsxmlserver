@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+import signal
+import sys
+import os
+import re
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def chop(line):
+    return line.replace("\r","").replace("\n","")
+
+
+cmd_str  = "(\S+)\s+(\S+).*(%s)\s+(.*)"
+
+def psAll():
+    lines = os.popen("ps -ef -ww","r").readlines()
+    return lines
+
+def match_cmd(lines,cmd):
+    out = {}
+    cmd_r = re.escape(cmd)
+    cmd_re = re.compile(cmd_str%cmd_r)
+    for line in lines:
+        m = cmd_re.match(chop(line))
+        if m:
+            pid = int(m.group(2))
+            cmd_name = m.group(3)
+            params = m.group(4)
+            out[pid] = (m.group(3),m.group(4))
+    return out
+
+if __name__=="__main__":
+    ps = psAll()
+    pids = match_cmd(ps,"python")
+    for(k,v) in pids.items():
+        if v[1] == "./dnsxmlserver.py":
+            printf("kill %s\n",k)
+            os.kill(k,signal.SIGTERM)

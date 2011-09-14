@@ -1,0 +1,11 @@
+{
+    "recordfile":"/etc/records.json",
+    "passwd": "dnspasswd",
+    "cert": "/etc/localhost.crt",
+    "max_child": 20,
+    "host": "yourNsIp",
+    "user": "dnsuser",
+    "key": "/etc/localhost.key",
+    "port": 23142,
+    "bindfile":"/etc/bind/mydomain.org"
+}

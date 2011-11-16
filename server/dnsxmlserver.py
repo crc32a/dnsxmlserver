@@ -77,11 +77,7 @@ def printexcuse():
     lf.flush()
 
 def version():
-    string_version = sys.version
-    dotted_version = string_version.split(" ")[0]
-    numerical_version = [int(x) for x in dotted_version.split(".")]
-    tuple_version = tuple(numerical_version)
-    return tuple_version
+    return sys.version_info[0:3]
 
 def closepid(signum,frame):
     try:

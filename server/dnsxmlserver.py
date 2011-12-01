@@ -128,6 +128,17 @@ def dbdata(records,serial):
         outstr += "%s IN A %s\n"%(h,aaaa)
     return outstr
 
+def _bumpSerial(old_serial):
+    now = datetime.datetime.now()
+    new_serial  = 0
+    new_serial += now.day   * 100
+    new_serial += now.month * 10000
+    new_serial += now.year  * 1000000
+    if old_serial >= new_serial:
+        return old_serial + 1
+    return new_serial
+
+
 class FuncXMLRPCError(Exception):
     def __init__(self,value):
         self.value = value
@@ -197,6 +208,22 @@ class DnsManager(object):
         return records["A"]
 
     @Auth
+    def getSerial(self):
+        records = load_json(self.recordfile)
+        serial = records["serial"]
+        return serial	
+
+    @Auth
+    def updateSerial(self):
+        records = load_json(self.recordfile)
+        serial = _bumpSerial(records["serial"])
+        records["serial"] = serial
+        save_json(self.recordfile,records)
+        updateBindFile(self.bindfile,records)
+        restartBind()
+        return serial
+
+    @Auth
     def delARecord(self,name):
         records = load_json(self.recordfile)
         if records["A"].has_key(name):
@@ -207,8 +234,7 @@ class DnsManager(object):
             updateBindFile(self.bindfile,records)
             restartBind()
             return True
-        return False
-            
+        return False    
 
 class SecureXMLRPCServer(SocketServer.ForkingMixIn,
                          BaseHTTPServer.HTTPServer,

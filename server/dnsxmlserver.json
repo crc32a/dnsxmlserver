@@ -3,7 +3,7 @@
     "passwd": "dnspasswd",
     "cert": "/etc/localhost.crt",
     "max_child": 20,
-    "host": "yourNsIp",
+    "host": "10.6.61.86",
     "user": "dnsuser",
     "key": "/etc/localhost.key",
     "port": 23142,

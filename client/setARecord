@@ -13,11 +13,7 @@ def usage(prog):
     printf("set the host name to the ip address\n")
 
 if __name__=="__main__":
-    conf = util.load_json("dnsxmlclient.json")
-
-    url = conf["url"]
-    cred = conf["cred"]
-
+    (url,domain,baseDomain,cred) = util.getCurrentDomain()
     prog = os.path.basename(sys.argv[0])
     if len(sys.argv)<3:
         usage(prog)

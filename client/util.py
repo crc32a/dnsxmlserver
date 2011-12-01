@@ -6,6 +6,8 @@ import os
 import re
 
 cmd_str  = "(\S+)\s+(\S+).*(%s)\s+(.*)"
+CONF_FILE = "~/dnsxmlclient.json"
+
 
 def chop(line):
     return line.replace("\r","").replace("\n","")
@@ -51,3 +53,27 @@ def match_cmd(lines,cmd):
             params = m.group(4)
             out[pid] = (m.group(3),m.group(4))
     return out
+
+def getCurrentDomain(*args):
+    conf = load_json(CONF_FILE)
+    if len(args)==0:
+        domain = conf["curr_domain"]
+    else:
+        domain = args[0]
+    url = conf["domains"][domain]["url"]
+    baseDomain = conf["domains"][domain]["baseDomain"]
+    cred = conf["domains"][domain]["cred"]
+    return (url,domain,baseDomain,cred)
+
+def pad(digits,ch,val,*args,**kw):
+  str_out=str(val)
+  side = kw.pop("side","LEFT")
+  if side == "LEFT":
+    for i in xrange(0,digits-len(str_out)):
+      str_out = ch + str_out
+    return str_out
+  if side == "RIGHT":
+    for i in xrange(0,digits-len(str_out)):
+      str_out = str_out + ch
+    return str_out
+

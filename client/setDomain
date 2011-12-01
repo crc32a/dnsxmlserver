@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+import util
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog):
+    printf("Usage is %s <domain>\n",prog)
+    printf("\n")
+    printf("Set the current domain for future dnsxml record calls\n")
+    printf("run lsDomains to see the available list of domains\n")
+
+if __name__=="__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<2:
+        usage(prog)
+        sys.exit()
+    domain = sys.argv[1]
+    
+    conf = util.load_json(util.CONF_FILE)
+    if not conf["domains"].has_key(domain):
+        printf("\n")
+        printf("domain %s not found in %s\n",domain,util.CONF_FILE)
+        printf("Perhaps you intended to use one of the following domains:\n")
+        for key in sorted(conf["domains"].keys()):
+            printf("    %s\n",key)
+        printf("\n")
+        printf("If not then create an entry in %s for it\n",util.CONF_FILE)
+        sys.exit()
+    conf["curr_domain"] = domain
+    util.save_json(util.CONF_FILE,conf)
+
+

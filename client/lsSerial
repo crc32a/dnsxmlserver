@@ -9,8 +9,6 @@ def printf(format,*args): sys.stdout.write(format%args)
 if __name__=="__main__":
     (url,curr_domain,baseDomain,cred) = util.getCurrentDomain()
     s = xmlrpclib.ServerProxy(url)
-    A = s.getARecords(cred)
+    serial = s.getSerial(cred)
     printf("\n")
-    printf("A records for domain %s:\n",curr_domain)
-    for (host,ip) in s.getARecords(cred).items():
-        printf("    %s: %s\n",host,ip)
+    printf("Serial for domain %s:  %i\n",curr_domain,serial)

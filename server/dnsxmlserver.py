@@ -6,6 +6,8 @@
 DAEMON = True
 DEBUG = True
 
+VERSION = ["dnsxmlserver",1,0,0]
+
 from OpenSSL import SSL
 import SimpleXMLRPCServer
 import SimpleHTTPServer
@@ -198,9 +200,10 @@ class DnsManager(object):
         return records["A"]
 
     @Auth
-    def setARecord(self,name,ip):
+    def setARecord(self,name,ip,**kw):
+        ttl = kw.pop("ttl",None)
         records = load_json(self.recordfile)
-        records["A"][name] = ip
+        records["A"][name] = [ip,ttl]
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
@@ -234,7 +237,16 @@ class DnsManager(object):
             updateBindFile(self.bindfile,records)
             restartBind()
             return True
-        return False    
+        return False
+
+    def getVersion(self):
+        return VERSION
+
+    def echoKV(self,*args,**kw):
+        out = {}
+        out["args"] = [a for a in args]
+        out["kv"] = [(k,v) for (k,v) in kw.items()]
+        return out
 
 class SecureXMLRPCServer(SocketServer.ForkingMixIn,
                          BaseHTTPServer.HTTPServer,
@@ -253,7 +265,7 @@ class SecureXMLRPCServer(SocketServer.ForkingMixIn,
             SimpleXMLRPCServer.SimpleXMLRPCDispatcher.__init__(self)
 
         elif pyversion >= (2,5,0):
-            SimpleXMLRPCServer.SimpleXMLRPCDispatcher.__init__(self,False,None)
+            SimpleXMLRPCServer.SimpleXMLRPCDispatcher.__init__(self,True,None)
           
         else:
             raise " python version needs to be in  2.4.0 =< v < 2.6.0 "

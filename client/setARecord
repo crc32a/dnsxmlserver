@@ -8,7 +8,7 @@ import os
 def printf(format,*args): sys.stdout.write(format%args)
 
 def usage(prog):
-    printf("Usage is %s <host> <ip>\n",prog)
+    printf("Usage is %s <host> <ip> [ttl]\n",prog)
     printf("\n")
     printf("set the host name to the ip address\n")
 
@@ -21,4 +21,9 @@ if __name__=="__main__":
     host = sys.argv[1]
     ip = sys.argv[2]
     s = xmlrpclib.ServerProxy(url)
-    s.setARecord(cred,host,ip)
+    
+    if len(sys.argv)>=4:
+        ttl = int(sys.argv[3])
+        s.setARecord(cred,host,ip,ttl)
+    else:
+        s.setARecord(cred,host,ip)

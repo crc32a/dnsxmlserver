@@ -124,10 +124,17 @@ def now():
 
 def dbdata(records,serial):
     outstr = records["pre_record"]%serial
-    for (h,a) in records["A"].items():
-        outstr += "%s IN A %s\n"%(h,a)
-    for (h,aaaa) in records["AAAA"].items():
-        outstr += "%s IN A %s\n"%(h,aaaa)
+    for(h,(ip,ttl)) in records["A"].items():
+        if ttl != None:
+            outstr += "%s %i IN A %s\n"%(h,ttl,ip)
+        else:
+            outstr += "%s IN A %s\n"%(h,ip)
+
+    for (h,(ip,ttl)) in records["AAAA"].items():
+        if ttl != None:
+            outstr += "%s %i IN AAAA %s\n"%(h,ttl,ip)
+        else:
+            outstr += "%s IN AAAA %s\n"%(h,ip)
     return outstr
 
 def _bumpSerial(old_serial):
@@ -196,12 +203,18 @@ class DnsManager(object):
 
     @Auth
     def getARecords(self):
+        out = {}
         records = load_json(self.recordfile)
-        return records["A"]
+        for (h,(ip,ttl)) in records["A"].items():
+            out[h]=ip
+        return out
 
     @Auth
-    def setARecord(self,name,ip,**kw):
-        ttl = kw.pop("ttl",None)
+    def setARecord(self,name,ip,*args):
+        if len(args)>0:
+            ttl = args[0]
+        else:
+            ttl = None
         records = load_json(self.recordfile)
         records["A"][name] = [ip,ttl]
         records["serial"] += 1
@@ -242,7 +255,7 @@ class DnsManager(object):
     def getVersion(self):
         return VERSION
 
-    def echoKV(self,*args,**kw):
+    def echoKV(self,x,y,*args,**kw):
         out = {}
         out["args"] = [a for a in args]
         out["kv"] = [(k,v) for (k,v) in kw.items()]

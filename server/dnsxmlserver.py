@@ -169,7 +169,7 @@ def bumpSerial(old_serial):
     new_serial += now.day   * 100
     new_serial += now.month * 10000
     new_serial += now.year  * 1000000
-    new_serial += fracDelta(midnight,now,99)
+    #new_serial += fracDelta(midnight,now,99)
     if old_serial >= new_serial:
         return old_serial + 1
     return new_serial

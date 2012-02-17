@@ -11,6 +11,13 @@ if __name__=="__main__":
     s = xmlrpclib.ServerProxy(url)
     A = s.getARecords(cred)
     printf("\n")
-    printf("A records for domain %s:\n",curr_domain)
-    for (host,ip) in s.getARecords(cred).items():
-        printf("    %s: %s\n",host,ip)
+    msg = "A records for domain %s"%curr_domain
+    pb = "--------------------------------------------------------------"
+    sp_len = (len(pb)-len(msg))/2
+    printf("%s%s\n"," "*sp_len,msg)
+    printf("\n")
+    fmt = "%6s%16s%40s\n"
+    printf(fmt,"ttl","host","ip")
+    printf("%s\n",pb)
+    for (host,ip,ttl) in A:       
+        printf(fmt,ttl,host,ip)

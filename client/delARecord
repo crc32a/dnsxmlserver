@@ -8,9 +8,11 @@ import os
 def printf(format,*args): sys.stdout.write(format%args)
 
 def usage(prog):
-    printf("Usage is %s <host>\n",prog)
+    printf("Usage is %s <host> <ip1..ipN>\n",prog)
     printf("\n")
-    printf("delete the A record for the host\n")
+    printf("delete the A record for the host with the ip\n")
+    printf("If you want to delete all the ip records run\n")
+    printf("delHost\n")
 
 if __name__=="__main__":
     (url,domain,baseDomain,cred) = util.getCurrentDomain()
@@ -20,4 +22,7 @@ if __name__=="__main__":
         sys.exit()
     host = sys.argv[1]
     s = xmlrpclib.ServerProxy(url)
-    s.delARecord(cred,host)
+    ips = sys.argv[2:]
+    deletedIps = s.delARecord(cred,host,*ips)
+    for ip in deletedIps:
+        printf("deleted %s\n",ip)

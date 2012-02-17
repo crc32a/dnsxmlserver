@@ -1,8 +1,7 @@
 {
-    "A": {
-        "ns1": "127.0.0.1"
-    }, 
-    "AAAA": {}, 
-    "serial": 2011081211, 
-    "pre_record": "$TTL 30\n$ORIGIN yourdomain.org.\n@\tIN\tSOA\tmydomainns1.mydomain.org.\troot.mydomainns1.mydomain.org. (\n\t%i \t; Serial\n\t28800\t\t; Refresh\n\t14400\t\t; Retry\n\t3600000\t\t; Expire\n\t300\t\t; Negative Cache TTL\n\t)\n\tIN NS   mydomainns1.mydomain.org.\nmydomainns1.mydomain.org.  IN A\t127.0.0.1\n"
+    "A": [
+    ], 
+    "AAAA": [], 
+    "serial": 2012021006, 
+    "pre_record": "$TTL 30\n$ORIGIN mydomain.org.\n@\tIN\tSOA\tmydomainns1.mydomain.org.\troot.mydomainns1.mydomain.org. (\n\t%i \t; Serial\n\t28800\t\t; Refresh\n\t14400\t\t; Retry\n\t3600000\t\t; Expire\n\t300\t\t; Negative Cache TTL\n\t)\n\tIN NS   mydomainns1.mydomain.org.\nmydomainns1.mydomain.org.  IN A\t127.0.0.1\n"
 }

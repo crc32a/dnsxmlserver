@@ -20,6 +20,7 @@ import OpenSSL
 import string
 import socket
 import signal
+import math
 import json
 import copy
 import time
@@ -124,25 +125,51 @@ def now():
 
 def dbdata(records,serial):
     outstr = records["pre_record"]%serial
-    for(h,(ip,ttl)) in records["A"].items():
+    for (h,ip,ttl) in records["A"]:
         if ttl != None:
             outstr += "%s %i IN A %s\n"%(h,ttl,ip)
         else:
             outstr += "%s IN A %s\n"%(h,ip)
 
-    for (h,(ip,ttl)) in records["AAAA"].items():
+    for (h,ip,ttl) in records["AAAA"]:
         if ttl != None:
             outstr += "%s %i IN AAAA %s\n"%(h,ttl,ip)
         else:
             outstr += "%s IN AAAA %s\n"%(h,ip)
     return outstr
 
-def _bumpSerial(old_serial):
+def stripDate(dt):
+    y = dt.year
+    m = dt.month
+    d = dt.day
+    out = datetime.datetime(y,m,d)
+    return out
+
+
+def dt2ep(dt):
+    ms = dt.microsecond/1000000.0
+    t = time.mktime(dt.timetuple()) + ms
+    return t
+
+
+def ep2dt(ep):
+    return datetime.datetime.fromtimestamp(ep)
+
+def fracDelta(oldDt,newDt,nfracs):
+    secs = dt2ep(newDt) - dt2ep(oldDt)
+    secsperday = 24.0*60.0*60.0
+    n = float(nfracs)
+    fracs = n*secs/secsperday
+    return int(math.floor(fracs))
+
+def bumpSerial(old_serial):
     now = datetime.datetime.now()
+    midnight = stripDate(now)
     new_serial  = 0
     new_serial += now.day   * 100
     new_serial += now.month * 10000
     new_serial += now.year  * 1000000
+    new_serial += fracDelta(midnight,now,99)
     if old_serial >= new_serial:
         return old_serial + 1
     return new_serial
@@ -163,7 +190,8 @@ class AuthException(Exception):
         return repr(self.val)
 
 def restartBind():
-    os.popen("/etc/init.d/bind9 restart").read()
+    os.popen("/etc/init.d/bind9 stop").read()
+    os.popen("/etc/init.d/bind9 start").read()
 
 def Auth(func):
     def auth_decorator(*args,**kwargs):
@@ -192,7 +220,8 @@ def updateBindFile(bindfile,records):
     fp.close()
 
 class DnsManager(object):
-    def __init__(self,cred,bindfile,recordfile):
+    def __init__(self,cred,bindfile,recordfile,lfp):
+        self.lfp = lfp
         self.cred = cred
         self.bindfile = bindfile
         self.recordfile = recordfile
@@ -202,21 +231,35 @@ class DnsManager(object):
         return "echo: %s"%str_in
 
     @Auth
-    def getARecords(self):
-        out = {}
+    def getARecords(self,*args):
+        out = []
         records = load_json(self.recordfile)
-        for (h,(ip,ttl)) in records["A"].items():
-            out[h]=ip
+        argSet = set(args)
+        for (h,k,ttl) in records["A"]:
+            if len(args)>0:
+                if not h in argSet:
+                    continue
+            out.append((h,k,ttl))
         return out
 
     @Auth
-    def setARecord(self,name,ip,*args):
-        if len(args)>0:
-            ttl = args[0]
-        else:
-            ttl = None
+    def addARecord(self,host,ip,ttl):
         records = load_json(self.recordfile)
-        records["A"][name] = [ip,ttl]
+        host = host.lower()
+        oldA = records["A"]
+        oldIps = {}
+        newA = [(host,ip,ttl)]
+        oldIps = set([ip])
+        op = "ADDED"
+        for (rh,rip,rttl) in oldA:
+            if rh.lower() == host:
+                if rip in oldIps:
+                    if rip == ip:
+                        op = "UPDATED"
+                    continue #Not including duplicate Ips per host
+            newA.append((rh.lower(),rip,rttl))
+        newA.sort()
+        records["A"] = newA
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
@@ -232,7 +275,7 @@ class DnsManager(object):
     @Auth
     def updateSerial(self):
         records = load_json(self.recordfile)
-        serial = _bumpSerial(records["serial"])
+        serial = bumpSerial(records["serial"])
         records["serial"] = serial
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
@@ -240,17 +283,32 @@ class DnsManager(object):
         return serial
 
     @Auth
-    def delARecord(self,name):
+    def delARecord(self,host,*ip):
+        host = host.lower()
         records = load_json(self.recordfile)
-        if records["A"].has_key(name):
-            del records["A"][name]
-            save_json(self.recordfile,records)
-            records["serial"] += 1
-            save_json(self.recordfile,records)
-            updateBindFile(self.bindfile,records)
-            restartBind()
-            return True
-        return False
+        oldA = records["A"]
+        newA = []
+        doomedIps = set(ip)
+        deletedIps = []
+        #fprintf(self.lfp,"Attempting to delete %s %s %s\n",host,ip,doomedIps)
+        for (rh,rip,rttl) in oldA:
+            #fprintf(self.lfp,"Eval %s %s %s\n",rh,rip,rttl)
+            if rh.lower() == host: 
+                if len(doomedIps)<=0:
+                    deletedIps.append(rip)
+                    continue
+                if rip in doomedIps:
+                    deletedIps.append(rip)
+                    continue
+            newA.append((rh.lower(),rip,rttl))
+        newA.sort()
+        records["A"] = newA
+        records["serial"] += 1
+        save_json(self.recordfile,records)
+        updateBindFile(self.bindfile,records)
+        restartBind()
+        return deletedIps
+        
 
     def getVersion(self):
         return VERSION
@@ -489,7 +547,7 @@ if __name__ == "__main__":
         lf.flush()
         signal.signal(signal.SIGTERM,closepid)
         s = Server((HOST,PORT),Handler)
-        s.register_instance(DnsManager(CRED,BINDFILE,RECORDFILE),allow_dotted_names=True)
+        s.register_instance(DnsManager(CRED,BINDFILE,RECORDFILE,lf),allow_dotted_names=True)
     except:
         msg = "Error starting server reason\nExcuse: %s\n"%excuse()
         fprintf(lf,"%s",msg)

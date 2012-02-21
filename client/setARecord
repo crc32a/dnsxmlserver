@@ -26,6 +26,5 @@ if __name__=="__main__":
         ttl = int(sys.argv[3])
     else:
         ttl = None
-    res = s.addARecord(cred,host,ip,ttl)
-    args = (res["updated"],res["added"],res["total"])
-    printf("updated=%i added=%i totalIps = %i\n",*args)
+    res = s.setARecord(cred,host,ip,ttl)
+    printf("op = %s\n",res)    

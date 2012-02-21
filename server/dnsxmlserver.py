@@ -247,15 +247,17 @@ class DnsManager(object):
         records = load_json(self.recordfile)
         host = host.lower()
         oldA = records["A"]
-        oldIps = {}
         newA = [(host,ip,ttl)]
         oldIps = set([ip])
-        op = "ADDED"
+        out = {"updated":0,"added":1,"total":1}
         for (rh,rip,rttl) in oldA:
             if rh.lower() == host:
+                out["total"] += 1
                 if rip in oldIps:
                     if rip == ip:
-                        op = "UPDATED"
+                        out["updated"] = 1
+                        out["added"]   = 0
+                        out["total"]  -= 1
                     continue #Not including duplicate Ips per host
             newA.append((rh.lower(),rip,rttl))
         newA.sort()
@@ -264,7 +266,27 @@ class DnsManager(object):
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
         restartBind()
-        return records["A"]
+        return out
+
+    @Auth
+    def setARecord(self,host,ip,ttl):
+        records = load_json(self.recordfile)
+        host = host.lower()
+        oldA = records["A"]
+        newA = [(host,ip,ttl)]
+        op = "ADD"
+        for (rh,rip,rttl) in oldA:
+            if rh.lower() == host.lower():
+                op = "UPDATE"
+                continue
+            newA.append((rh.lower(),rip,rttl))
+        newA.sort()
+        records["A"] = newA
+        records["serial"] += 1
+        save_json(self.recordfile,records)
+        updateBindFile(self.bindfile,records)
+        restartBind()
+        return op
 
     @Auth
     def getSerial(self):
@@ -290,9 +312,7 @@ class DnsManager(object):
         newA = []
         doomedIps = set(ip)
         deletedIps = []
-        #fprintf(self.lfp,"Attempting to delete %s %s %s\n",host,ip,doomedIps)
         for (rh,rip,rttl) in oldA:
-            #fprintf(self.lfp,"Eval %s %s %s\n",rh,rip,rttl)
             if rh.lower() == host: 
                 if len(doomedIps)<=0:
                     deletedIps.append(rip)

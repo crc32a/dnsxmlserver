@@ -136,6 +136,11 @@ def dbdata(records,serial):
             outstr += "%s %i IN AAAA %s\n"%(h,ttl,ip)
         else:
             outstr += "%s IN AAAA %s\n"%(h,ip)
+    for (name,val,ttl) in records["CNAME"]:
+        if ttl != None:
+            outstr += "%s %i IN CNAME %s\n"%(name,ttl,val)
+        else:
+            outstr += "%s IN CNAME %s\n"%(name,val)
     return outstr
 
 def stripDate(dt):
@@ -287,6 +292,49 @@ class DnsManager(object):
         updateBindFile(self.bindfile,records)
         restartBind()
         return op
+
+
+
+    @Auth
+    def setCNAMERecord(self,name,val,ttl):
+        records = load_json(self.recordfile)
+        name = name.lower()
+        oldA = records["CNAME"]
+        newA = [(name,val,ttl)]
+        op = "ADD"
+        for (rn,rval,rttl) in oldA:
+            if rn.lower() == name.lower():
+                op = "UPDATE"
+                continue
+            newA.append((rn.lower(),rval,rttl))
+        newA.sort()
+        records["CNAME"] = newA
+        records["serial"] += 1
+        save_json(self.recordfile,records)
+        updateBindFile(self.bindfile,records)
+        restartBind()
+        return op
+
+    @Auth
+    def delCNAMERecord(self,name):
+        name = name.lower()
+        records = load_json(self.recordfile)
+        oldA = records["A"]
+        newA = []
+        deletedCNames = []
+        for (rname,rval,rttl) in oldA:
+            if rname.lower() == name:
+                deletedNames.append((rname,rval,ttl))
+                continue
+            newA.append((rname,rval,rttl))
+        newA.sort()
+        records["CNAME"] = newA
+        records["serial"] += 1
+        save_json(self.recordfile,records)
+        updateBindFile(self.bindfile,records)
+        restartBind()
+        return deletedCNames
+        
 
     @Auth
     def getSerial(self):

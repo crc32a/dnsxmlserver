@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+import util
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog):
+    printf("Usage is %s <name> <val> [ttl]\n",prog)
+    printf("\n")
+    printf("set the host name to the ip address\n")
+
+if __name__=="__main__":
+    (url,domain,baseDomain,cred) = util.getCurrentDomain()
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<3:
+        usage(prog)
+        sys.exit()
+    name = sys.argv[1]
+    val = sys.argv[2]
+    s = xmlrpclib.ServerProxy(url,allow_none=True)
+    
+    if len(sys.argv)>=4:
+        ttl = int(sys.argv[3])
+    else:
+        ttl = None
+    res = s.setCNAMERecord(cred,name,val,ttl)
+    printf("op = %s\n",res)    

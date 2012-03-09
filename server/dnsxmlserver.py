@@ -319,23 +319,22 @@ class DnsManager(object):
     def delCNAMERecord(self,name):
         name = name.lower()
         records = load_json(self.recordfile)
-        oldA = records["A"]
-        newA = []
+        oldC = records["CNAME"]
+        newC = []
         deletedCNames = []
-        for (rname,rval,rttl) in oldA:
+        for (rname,rval,rttl) in oldC:
             if rname.lower() == name:
-                deletedNames.append((rname,rval,ttl))
+                deletedCNames.append((rname,rval,rttl))
                 continue
-            newA.append((rname,rval,rttl))
-        newA.sort()
-        records["CNAME"] = newA
+            newC.append((rname,rval,rttl))
+        newC.sort()
+        records["CNAME"] = newC
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
         restartBind()
         return deletedCNames
         
-
     @Auth
     def getSerial(self):
         records = load_json(self.recordfile)

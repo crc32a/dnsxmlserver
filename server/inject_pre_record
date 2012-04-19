@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+import json
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def usage(prog):
+    printf("usage is %s <pre_record_file> <json_records_file>\n",prog)
+    printf("\n")
+    printf("Inject the pre_record_file into the json_records_file\n")
+    printf("Usefull for building SOA records as pure text first then\n")
+    printf("injecting it into the records.json file\n")
+
+def fullPath(file_path):
+    return os.path.abspath(os.path.expanduser(file_path))
+
+if __name__ == "__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<3:
+        usage(prog)
+        sys.exit()
+
+    pre_text_path = fullPath(sys.argv[1])
+    records_path = fullPath(sys.argv[2])
+
+    pre_text = open(pre_text_path,"r").read()
+    j = open(records_path,"r").read()
+    records = json.loads(j)
+    records["pre_record"] = pre_text
+    j = json.dumps(records,indent=4)
+    open(records_path,"w").write(j)
+
+    

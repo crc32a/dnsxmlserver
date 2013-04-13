@@ -1,0 +1,13 @@
+$TTL 30
+$ORIGIN yourdomain.org.
+@       IN      SOA     ns1.yourdomain.org.     root.yourdomain.org. (
+        %i      ; Serial
+        28800           ; Refresh
+        14400           ; Retry
+        3600000         ; Expire
+        300             ; Negative Cache TTL
+        )
+        IN NS   ns1.yourdomain.org.
+        IN NS   ns2.yourdomain.org.
+ns1.yourdomain.org. 14400 IN A  127.0.0.1
+ns2.yourdomain.org. 14400 IN A  127.0.0.1

@@ -11,7 +11,7 @@ has your domain. For example if your domain is mydomain.org you would have.
 Also remember the name of the file you use. For example /etc/bind/mydomain.org
 as it will be used in your dnsxmlserver.json file later
 
-Example named.local.conf:
+Example named.conf.local:
     zone "mydomain.org" IN {
         type master;
         file "/etc/bind/mydomain.org";
@@ -48,7 +48,7 @@ the dnsxmlserver.json file. This option will tell the XMLRPC server which ip
 it should bind to when serving requests. also set the bindfile entry to the 
 location of your zone file.  copy the dnsxmlserver.json file to your /etc
 directory. In the example A records you'll see an ns1 entry which is your 
-name servers A record. 127.0.0.1 is clearly not going to work in procution you
+name servers A record. 127.0.0.1 is clearly not going to work in prodution you
 can set it to your nameservers actual A record later. also you can set your
 serial number to what ever you see fit as your starting serial number. The 
 bindfile option should be set to what ever you used in your name.local.conf 

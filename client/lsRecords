@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+import util
+import sys
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+if __name__=="__main__":
+    (url,curr_domain,baseDomain,cred) = util.getCurrentDomain()
+    s = xmlrpclib.ServerProxy(url)
+    records = s.getRecords(cred)
+    printf("\n")
+    msg = "A records for domain %s"%curr_domain
+    pb = "--------------------------------------------------------------"
+    sp_len = (len(pb)-len(msg))/2
+    printf("%s%s\n"," "*sp_len,msg)
+    printf("\n")
+    fmt = "%6s %16s %40s %5s\n"
+    printf(fmt,"ttl","host","ip","rType")
+    printf("%s\n",pb)
+    for (host,ip,ttl,rType) in records:
+        printf(fmt,ttl,host,ip,rType)

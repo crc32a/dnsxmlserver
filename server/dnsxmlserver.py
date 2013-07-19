@@ -236,6 +236,19 @@ class DnsManager(object):
         return "echo: %s"%str_in
 
     @Auth
+    def getRecords(self,*args):
+        out = []
+        records = load_json(self.recordfile)
+        argSet = set(args)
+        for rType in ["A","AAAA","CNAME"]:
+            for (k,v,ttl) in records[rType]:
+                if len(args)>0:
+                    if not h in argSet:
+                        continue
+                out.append((k,v,ttl,rType))
+        return out
+
+    @Auth
     def getARecords(self,*args):
         out = []
         records = load_json(self.recordfile)
@@ -292,8 +305,6 @@ class DnsManager(object):
         updateBindFile(self.bindfile,records)
         restartBind()
         return op
-
-
 
     @Auth
     def setCNAMERecord(self,name,val,ttl):

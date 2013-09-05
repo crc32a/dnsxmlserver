@@ -6,3 +6,6 @@ Requires delegation from your domain to your nameserver.
 
 April 6, 2012
 Probably should have just used BIND with mysql as a backend but too late now. :(
+
+September 2013 Useing rndc and dynamic update instead :)
+

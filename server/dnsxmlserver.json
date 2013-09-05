@@ -7,5 +7,6 @@
     "user": "dnsuser",
     "key": "/etc/localhost.key",
     "port": 23142,
-    "bindfile":"/etc/bind/mydomain.org"
+    "bindfile":"/etc/bind/mydomain.org",
+    "domain":"mydomain.org"
 }

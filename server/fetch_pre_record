@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+import json
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def fullPath(file_path):
+    return os.path.abspath(os.path.expanduser(file_path))
+
+def usage(prog):
+    printf("usage is %s <pre_record_file> <json_records_file>\n",prog)
+    printf("\n")
+    printf("fetchs the prerecord to a file for you to edit\n")
+    printf("and then later re inject with the inject_pre_record script\n")
+    
+
+if __name__ == "__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<3:
+        usage(prog)
+        sys.exit()
+    pre_text_path = fullPath(sys.argv[1])
+    records_path = fullPath(sys.argv[2])
+
+    j = open(records_path,"r").read()
+    records = json.loads(j)
+    pre_text = records["pre_record"]
+    open(pre_text_path,"w").write(pre_text)
+
+    

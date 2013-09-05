@@ -194,10 +194,6 @@ class AuthException(Exception):
     def __str__(self):
         return repr(self.val)
 
-def restartBind():
-    os.popen("/etc/init.d/bind9 stop").read()
-    os.popen("/etc/init.d/bind9 start").read()
-
 def Auth(func):
     def auth_decorator(*args,**kwargs):
         INVCRED = "Invalid Credentials"
@@ -225,8 +221,9 @@ def updateBindFile(bindfile,records):
     fp.close()
 
 class DnsManager(object):
-    def __init__(self,cred,bindfile,recordfile,lfp):
+    def __init__(self,cred,bindfile,recordfile,lfp,config):
         self.lfp = lfp
+        self.config = config
         self.cred = cred
         self.bindfile = bindfile
         self.recordfile = recordfile
@@ -234,6 +231,16 @@ class DnsManager(object):
     @Auth
     def echo(self,str_in):
         return "echo: %s"%str_in
+
+    @Auth
+    def freeze(self):
+        os.popen("rndc freeze %s"%self.config["domain"]).read()
+        return "froze %s"%self.config["domain"]
+
+    @Auth
+    def thaw(self):
+        os.popen("rndc thaw %s"%self.config["domain"]).read()
+        return "thawed %s"%self.config["domain"]
 
     @Auth
     def getRecords(self,*args):
@@ -283,7 +290,6 @@ class DnsManager(object):
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
-        restartBind()
         return out
 
     @Auth
@@ -303,7 +309,6 @@ class DnsManager(object):
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
-        restartBind()
         return op
 
     @Auth
@@ -323,7 +328,6 @@ class DnsManager(object):
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
-        restartBind()
         return op
 
     @Auth
@@ -343,7 +347,6 @@ class DnsManager(object):
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
-        restartBind()
         return deletedCNames
         
     @Auth
@@ -359,7 +362,6 @@ class DnsManager(object):
         records["serial"] = serial
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
-        restartBind()
         return serial
 
     @Auth
@@ -384,7 +386,6 @@ class DnsManager(object):
         records["serial"] += 1
         save_json(self.recordfile,records)
         updateBindFile(self.bindfile,records)
-        restartBind()
         return deletedIps
         
 
@@ -625,7 +626,7 @@ if __name__ == "__main__":
         lf.flush()
         signal.signal(signal.SIGTERM,closepid)
         s = Server((HOST,PORT),Handler)
-        s.register_instance(DnsManager(CRED,BINDFILE,RECORDFILE,lf),allow_dotted_names=True)
+        s.register_instance(DnsManager(CRED,BINDFILE,RECORDFILE,lf,config),allow_dotted_names=True)
     except:
         msg = "Error starting server reason\nExcuse: %s\n"%excuse()
         fprintf(lf,"%s",msg)

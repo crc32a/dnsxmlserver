@@ -234,13 +234,21 @@ class DnsManager(object):
 
     @Auth
     def freeze(self):
-        os.popen("rndc freeze %s"%self.config["domain"]).read()
-        return "froze %s"%self.config["domain"]
+        cmd = "rndc freeze %s"%self.config["domain"]
+        os.popen(cmd).read()
+        return cmd
+
+    @Auth
+    def reload(self):
+        cmd = "rndc reload %s"%self.config["domain"]
+        os.popen(cmd).read()
+        return cmd
 
     @Auth
     def thaw(self):
-        os.popen("rndc thaw %s"%self.config["domain"]).read()
-        return "thawed %s"%self.config["domain"]
+        cmd = "rndc thaw %s"%self.config["domain"]
+        os.popen(cmd).read()
+        return cmd
 
     @Auth
     def getRecords(self,*args):

@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+import util
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+if __name__=="__main__":
+    (url,domain,baseDomain,cred) = util.getCurrentDomain()
+    s = xmlrpclib.ServerProxy(url,allow_none=True)
+    printf("%s\n", s.reload(cred))

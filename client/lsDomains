@@ -3,6 +3,9 @@
 import xmlrpclib
 import util
 import sys
+import ssl
+
+context = ssl._create_unverified_context()
 
 def printf(format,*args): sys.stdout.write(format%args)
 

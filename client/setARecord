@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import xmlrpclib
+import ssl
 import util
 import sys
 import os
+
+context = ssl._create_unverified_context()
 
 def printf(format,*args): sys.stdout.write(format%args)
 
@@ -20,7 +23,7 @@ if __name__=="__main__":
         sys.exit()
     host = sys.argv[1]
     ip = sys.argv[2]
-    s = xmlrpclib.ServerProxy(url,allow_none=True)
+    s = xmlrpclib.ServerProxy(url,allow_none=True, context=context)
     
     if len(sys.argv)>=4:
         ttl = int(sys.argv[3])

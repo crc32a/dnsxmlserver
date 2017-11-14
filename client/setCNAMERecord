@@ -3,7 +3,10 @@
 import xmlrpclib
 import util
 import sys
+import ssl
 import os
+
+context = ssl._create_unverified_context()
 
 def printf(format,*args): sys.stdout.write(format%args)
 
@@ -20,11 +23,11 @@ if __name__=="__main__":
         sys.exit()
     name = sys.argv[1]
     val = sys.argv[2]
-    s = xmlrpclib.ServerProxy(url,allow_none=True)
-    
+    s = xmlrpclib.ServerProxy(url,allow_none=True,context=context)
+
     if len(sys.argv)>=4:
         ttl = int(sys.argv[3])
     else:
         ttl = None
     res = s.setCNAMERecord(cred,name,val,ttl)
-    printf("op = %s\n",res)    
+    printf("op = %s\n",res)

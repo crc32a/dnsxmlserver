@@ -2,13 +2,16 @@
 
 import xmlrpclib
 import util
+import ssl
 import sys
+
+context=ssl._create_unverified_context()
 
 def printf(format,*args): sys.stdout.write(format%args)
 
 if __name__=="__main__":
     (url,curr_domain,baseDomain,cred) = util.getCurrentDomain()
-    s = xmlrpclib.ServerProxy(url)
+    s = xmlrpclib.ServerProxy(url, context=context)
     records = s.getRecords(cred)
     printf("\n")
     msg = "A records for domain %s"%curr_domain

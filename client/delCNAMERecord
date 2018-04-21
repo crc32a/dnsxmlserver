@@ -2,8 +2,11 @@
 
 import xmlrpclib
 import util
+import ssl
 import sys
 import os
+
+context=ssl._create_unverified_context()
 
 def printf(format,*args): sys.stdout.write(format%args)
 
@@ -21,7 +24,7 @@ if __name__=="__main__":
         usage(prog)
         sys.exit()
     name = sys.argv[1]
-    s = xmlrpclib.ServerProxy(url)
+    s = xmlrpclib.ServerProxy(url, context=context)
     deletedNames = s.delCNAMERecord(cred,name)
     for dname in deletedNames:
         printf("deleted %s\n",dname)

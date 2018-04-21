@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import xmlrpclib
+import ssl
 import util
 import sys
 import os
@@ -13,6 +14,7 @@ def usage(prog):
     printf("set the host name to the ip address\n")
 
 if __name__=="__main__":
+    context=ssl._create_unverified_context()
     (url,domain,baseDomain,cred) = util.getCurrentDomain()
     prog = os.path.basename(sys.argv[0])
     if len(sys.argv)<3:
@@ -20,7 +22,7 @@ if __name__=="__main__":
         sys.exit()
     host = sys.argv[1]
     ip = sys.argv[2]
-    s = xmlrpclib.ServerProxy(url,allow_none=True)
+    s = xmlrpclib.ServerProxy(url,allow_none=True, context=context)
     
     if len(sys.argv)>=4:
         ttl = int(sys.argv[3])

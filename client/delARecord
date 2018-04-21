@@ -24,7 +24,7 @@ if __name__=="__main__":
         usage(prog)
         sys.exit()
     host = sys.argv[1]
-    s = xmlrpclib.ServerProxy(url,context=context))
+    s = xmlrpclib.ServerProxy(url,context=context)
     ips = sys.argv[2:]
     deletedIps = s.delARecord(cred,host,*ips)
     for ip in deletedIps:
